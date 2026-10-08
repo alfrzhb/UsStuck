@@ -1,375 +1,170 @@
-# 🕌 UsStuck - AI-Powered Islamic Education Platform
+# UsStuck
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Node.js Version](https://img.shields.io/badge/node-%3E%3D16.0.0-brightgreen)](https://nodejs.org/)
-[![Vite](https://img.shields.io/badge/Vite-4.0+-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/)
-[![JavaScript](https://img.shields.io/badge/JavaScript-ES6+-F7DF1E?logo=javascript&logoColor=black)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
+**A hackathon-built Islamic learning prototype combining hadith discovery, contextual AI Q&A, and a community discussion interface.**
 
-> **Hackathon Project** - Revolutionizing Islamic education through AI-powered technology
+**3rd Place — National Hackathon** · Team project · Web / AI integration
 
-## 📖 About UsStuck
+![UsStuck logo](src/public/images/logo.png)
 
-UsStuck is an innovative AI-powered Islamic education platform designed to make authentic Islamic knowledge accessible and relatable for the modern world. Our platform provides clear, well-sourced answers to Islamic questions, fostering a deeper connection with faith through cutting-edge technology.
+UsStuck explores how an accessible web interface can help people discover hadith references, ask questions about Islamic topics, and explore discussions in one place. It was developed as a **hackathon prototype**, not as a scholar-verified religious authority or a production community platform.
 
-### 🎯 Mission
-To provide authentic Islamic knowledge through innovative technology that respects and preserves the integrity of Islamic teachings, making it accessible to Muslims worldwide regardless of their location or background.
+The codebase is a browser-based **Vanilla JavaScript SPA** with Vite, a Model–View–Presenter (MVP) structure, a static hadith dataset, and an experimental Google Gemini integration.
 
-## ✨ Key Features
+> **Project status:** Historical hackathon prototype. Core pages and demo interactions are implemented, but the forum and authentication use local demo data. The configured Gemini model is retired, so live AI responses require maintenance before they can be relied on.
 
-### 🤖 AI-Powered Q&A System
-- Instant answers to Islamic questions with authentic sources
-- References from Qur'an and verified Hadith collections
-- Context-aware responses tailored to user queries
+## Why we built it
 
-### 📚 Comprehensive Hadith Database
-- **10,000+** authentic Hadith from major collections
-- Collections include: Bukhari, Muslim, Tirmidzi, Abu Daud, Nasai, Ibn Majah
-- Advanced search and filtering capabilities
-- Detailed narrator information and chain of transmission
+Online Islamic learning resources are spread across Q&A sites, hadith collections, and discussion platforms. During the hackathon, our team designed UsStuck to explore a more connected experience:
 
-### 💬 Community Forum
-- Interactive discussion platform for Islamic topics
-- Age-appropriate content categorization
-- Real-time commenting and engagement system
-- Moderated discussions ensuring respectful dialogue
+- **Ask:** pose a question and receive a context-aware response informed by retrieved hadith records.
+- **Discover:** browse and search collections and their entries.
+- **Discuss:** explore topic-based conversations through a forum-style interface.
 
-### 🌐 Modern Web Experience
-- Responsive design for all devices (desktop, tablet, mobile)
-- Fast loading with optimized performance
-- Intuitive user interface with accessibility features
-- Progressive Web App (PWA) capabilities
+The central design idea is to **pair generative answers with inspectable source context**, rather than presenting an AI response as an unquestionable answer.
 
-## 🏗️ Technical Architecture
+## Features in the repository
 
-### Frontend Stack
-- **Vanilla JavaScript (ES6+)** - Core application logic
-- **HTML5 & CSS3** - Modern semantic markup and styling
-- **Vite** - Fast build tool and development server
-- **MVP Architecture** - Model-View-Presenter pattern for clean separation of concerns
+| Area | What is implemented | Important boundary |
+| --- | --- | --- |
+| Ask AI | Chat-style UI; relevant hadith retrieval; contextual Gemini prompt; source display | Falls back to predefined answers if Gemini is unavailable; output is not independently verified |
+| Hadith retrieval | Loads a static JSON dataset; matches keywords and Islamic concepts; scores and selects relevant entries | Client-side heuristic retrieval, not a trained semantic search or authoritative validation engine |
+| Catalog | Collection/category browsing, item details, and search/filter interactions | Catalog entries are defined in local JavaScript model data |
+| Forum | Topic list, categories, search, topic details, example comments and likes | Demo/in-memory data; **no persistent multi-user backend** |
+| Login | Login/register UI, demo accounts, local browser session representation | Mock client-side authentication; **not real account security** |
+| Navigation | Hash-based SPA routes for home, Ask AI, catalog, forum, about, login, and privacy | No server-side rendered pages or production API |
 
-### Key Technical Features
-- **Single Page Application (SPA)** with client-side routing
-- **Component-based architecture** for reusable UI elements
-- **Responsive design** with mobile-first approach
-- **Performance optimized** with lazy loading and code splitting
-- **SEO friendly** with proper meta tags and structured data
+### AI answer flow
 
-### Project Structure
+```mermaid
+flowchart LR
+    A["User question"] --> B["Hadith retrieval"]
+    D[("Static hadith JSON")] --> B
+    B --> C["Keyword and concept scoring"]
+    C --> E["Top matching entries"]
+    E --> F["Contextual prompt"]
+    A --> F
+    F --> G["Gemini API"]
+    G --> H["Answer + source context"]
+    G -->|Unavailable| I["Demo fallback response"]
 ```
+
+In [`dataset-service.js`](src/scripts/services/dataset-service.js), the browser loads hadith records and ranks matches using keyword overlap, mapped Islamic concepts, and source-aware scoring. The service supplies a small set of relevant records as context for [`gemini-service.js`](src/scripts/services/gemini-service.js). The UI distinguishes Gemini-generated output from fallback responses.
+
+**Citations shown by the prototype are not a guarantee of authenticity.** The model may hallucinate, misattribute, or misinterpret religious references. Users should verify quotations and conclusions against reliable primary sources and qualified scholars.
+
+## Technology and architecture
+
+| Layer | Technology |
+| --- | --- |
+| Interface | HTML5, CSS3, Vanilla JavaScript (ES modules) |
+| Build tooling | Vite 6, npm |
+| Design pattern | Model–View–Presenter (MVP) |
+| Navigation | Client-side hash router |
+| AI experimentation | Google Gemini REST API via browser `fetch` |
+| Data | Static `hadits.json`; local JavaScript catalog and forum models |
+| Browser utilities | Local cache, quota tracking, and rate-limiting helpers |
+| Deployment configuration | Netlify static build configuration |
+
+```mermaid
+flowchart TB
+    UI["Browser / Vite SPA"] --> PAGE["Pages and Views"]
+    PAGE --> PRESENT["Presenters"]
+    PRESENT --> MODEL["Models"]
+    MODEL --> DATA["Static catalog / forum data"]
+    PRESENT --> SERVICE["Gemini + dataset services"]
+    SERVICE --> JSON[("Hadith JSON asset")]
+    SERVICE --> API["Google Gemini API"]
+```
+
+**No Node.js application server or database server is implemented in this repository.** The Gemini integration is called from the browser; Node.js is used to develop and build the static application.
+
+### Repository structure
+
+```text
 UsStuck/
 ├── src/
+│   ├── index.html
 │   ├── scripts/
-│   │   ├── models/          # Data layer (MVP)
-│   │   ├── views/           # Presentation layer (MVP)
-│   │   ├── presenters/      # Business logic layer (MVP)
-│   │   ├── pages/           # Page components
-│   │   ├── routes/          # Client-side routing
-│   │   ├── services/        # API and external services
-│   │   ├── utils/           # Helper functions
-│   │   └── config/          # Configuration files
-│   ├── styles/              # CSS stylesheets
-│   └── public/              # Static assets
-├── package.json             # Dependencies and scripts
-├── vite.config.js          # Vite configuration
-└── README.md               # Project documentation
+│   │   ├── models/         # Client-side state and data models
+│   │   ├── views/          # UI markup and interactions
+│   │   ├── presenters/     # Connect pages, models, and views
+│   │   ├── pages/          # Routed pages
+│   │   ├── routes/         # Hash router
+│   │   ├── services/       # Dataset loading and Gemini integration
+│   │   ├── utils/          # Client cache, quota, API helpers
+│   │   └── data/           # Original dataset and research files
+│   ├── styles/
+│   └── public/             # Static assets copied by Vite
+├── vite.config.js
+├── prepare-deploy.js
+├── netlify.toml
+├── DEPLOYMENT.md
+└── package.json
 ```
 
-## 🚀 Getting Started
+## Run locally
 
-### Prerequisites
-- **Node.js** (version 16.0.0 or higher)
-- **npm** (comes with Node.js)
-- Modern web browser (Chrome, Firefox, Safari, Edge)
-
-### Installation
-
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/your-team/usstuck.git
-   cd usstuck
-   ```
-
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Setup Environment Variables**
-   ```bash
-   # Copy environment template
-   cp .env.example .env
-   
-   # Edit .env file and add your Gemini API key
-   # VITE_GEMINI_API_KEY=your_actual_api_key_here
-   ```
-
-4. **Setup Security Measures (Recommended)**
-   ```bash
-   # For Linux/macOS
-   chmod +x setup-security.sh
-   ./setup-security.sh
-   
-   # For Windows (PowerShell)
-   .\setup-security.ps1
-   ```
-   
-   This will:
-   - Configure git hooks to prevent committing secrets
-   - Setup GitLeaks for secret detection
-   - Verify .env files are properly ignored
-   - Install security best practices
-
-5. **Start development server**
-   ```bash
-   npm run dev
-   ```
-
-5. **Open your browser**
-   Navigate to `http://localhost:5173`
-
-### Build for Production
+**Prerequisites:** Node.js compatible with Vite 6 and npm.
 
 ```bash
-# Build the application
-npm run build
-
-# Preview the production build
-npm run preview
-```
-
-## 📱 Features Showcase
-
-### 🏠 Homepage
-- Hero section with clear value proposition
-- Feature highlights and platform statistics
-- Quick access to main functionalities
-
-### 🤖 Ask AI Page
-- Interactive chat interface
-- Real-time AI responses with Islamic sources
-- Source citations from Qur'an and Hadith
-- Message history and context awareness
-
-### 📖 Hadith Catalog
-- Browse by narrator collections
-- Advanced search functionality
-- Pagination and filtering options
-- Detailed hadith information with authenticity ratings
-
-### 💭 Discussion Forum
-- Topic-based discussions
-- Category filtering (General, Fiqh, Aqidah, etc.)
-- User engagement features (likes, comments)
-- Responsive design for mobile discussions
-
-### ℹ️ About Us
-- Team information with real profiles
-- Platform mission and vision
-- Contact information and social links
-- University affiliation (UIN Sunan Kalijaga)
-
-## 👥 Meet Our Team
-
-### Muhammad Alfarizi Habibullah
-**Frontend & Backend Developer**
-- 📧 m.alfarizihabibullah@gmail.com
-- 🐙 [GitHub](https://github.com/V60Code)
-- 💼 [LinkedIn](https://www.linkedin.com/in/m-alfarizi-habibullah/)
-- **Expertise**: Frontend Development, Backend Development, JavaScript, Node.js, React
-
-### Ahmad Mushthofa Kamal
-**Team Leader**
-- 📧 am240755@gmail.com
-- 🐙 [GitHub](https://github.com/muzzto)
-- 💼 [LinkedIn](https://www.linkedin.com/in/a-mushthofa/)
-- **Expertise**: Linux Administrator, DevOps, Project Manager, System Architecture
-
-### Zhafran Pradistyatama Kuncoro
-**UI/UX Designer**
-- 📧 zhafrankuncoro@gmail.com
-- 🐙 [GitHub](https://github.com/NorpajSucces)
-- 💼 [LinkedIn](https://www.linkedin.com/in/zhafran-kuncoro)
-- **Expertise**: UI Design, UX Research, Prototyping, User Testing, Design Systems
-
-## 🏆 Hackathon Highlights
-
-### Innovation Points
-- **AI Integration**: Seamless integration of AI for Islamic Q&A
-- **Authentic Sources**: All responses backed by verified Islamic texts
-- **Modern Architecture**: Clean MVP pattern implementation
-- **User Experience**: Intuitive design with accessibility in mind
-- **Performance**: Optimized loading and responsive design
-
-### Technical Achievements
-- ✅ **Single Page Application** with smooth navigation
-- ✅ **Component-based architecture** for maintainability
-- ✅ **Responsive design** across all device sizes
-- ✅ **Performance optimization** with lazy loading
-- ✅ **Clean code structure** following best practices
-- ✅ **Accessibility features** for inclusive design
-
-### Unique Selling Points
-1. **Authentic Islamic Content** - All information verified by Islamic scholars
-2. **AI-Powered Responses** - Instant, contextual answers to Islamic questions
-3. **Comprehensive Database** - Extensive Hadith collections with search capabilities
-4. **Community Engagement** - Interactive forum for Islamic discussions
-5. **Modern Technology** - Built with latest web technologies for optimal performance
-
-## 📊 Platform Statistics
-
-- 📚 **10,000+** Authentic Hadith Collections
-- 🤖 **50,000+** AI-Powered Questions Answered
-- 👥 **25,000+** Active Users Worldwide
-- ✅ **99.9%** Accuracy Rate (Verified by Islamic Scholars)
-
-## 🛠️ Development Scripts
-
-```bash
-# Start development server
+git clone https://github.com/alfrzhb/UsStuck.git
+cd UsStuck
+npm ci
 npm run dev
+```
 
-# Build for production
+Open **http://localhost:5173**. You can explore the pages and demo functionality without connecting to Gemini. If an AI request fails, the current application can return a predefined fallback response.
+
+### About environment configuration
+
+The template is [`.env.example`](.env.example). This repository sets Vite's application root to `src/`, so Vite's default environment directory is also `src/`, not the repository root. For **local experimentation only**, the existing frontend integration expects its `VITE_*` variables in `src/.env` (or set in the process environment).
+
+```bash
+cp .env.example src/.env
+```
+
+**Do not put a production or unrestricted API key in `VITE_GEMINI_API_KEY`.** Vite embeds `VITE_*` values in browser-accessible code. The current [config](src/scripts/config.js) and [Gemini service](src/scripts/services/gemini-service.js) send requests directly from the browser, so an API key used this way is **not secret**, regardless of whether `.env` is git-ignored. A server-side proxy or other approved secret-handling design is necessary before offering live AI to public users.
+
+The repository currently hard-codes `gemini-1.5-flash` in [`src/scripts/config.js`](src/scripts/config.js). **Gemini 1.5 has been shut down**; selecting a currently supported API model and retesting the integration requires a code change. See [Google's model lifecycle documentation](https://ai.google.dev/gemini-api/docs/deprecations) and [supported-model guidance](https://firebase.google.com/docs/ai-logic/models).
+
+### Production build
+
+```bash
 npm run build
-
-# Preview production build
 npm run preview
-
-# Lint code
-npm run lint
-
-# Format code
-npm run format
 ```
 
-## 🔧 Environment Setup
+The build executes `prepare-deploy.js` first, copying the hadith JSON into public locations before Vite creates `dist/`. The JSON asset is large (approximately 75 MB uncompressed) and will affect deployment size and browser download time.
 
-### Development Setup
-1. **Copy environment template:**
-   ```bash
-   cp .env.example .env
-   ```
+The [Netlify configuration](netlify.toml) provides a static build target (`npm run build` → `dist/`). This is **deployment configuration**, not a claim that a current production instance is online or secure. See [`DEPLOYMENT.md`](DEPLOYMENT.md) for the historical deployment notes; its security recommendations should be reviewed against the caveats above.
 
-2. **Edit `.env` file and add your API key:**
-   ```env
-   VITE_GEMINI_API_KEY=your_actual_api_key_here
-   VITE_API_BASE_URL=https://generativelanguage.googleapis.com/v1/models
-   ```
+**Available npm scripts:** `dev`, `build`, `preview`, `prepare-deploy`, and `deploy`. There are **no repository-defined lint, formatting, or automated test scripts** at present.
 
-### Production Setup (Netlify)
-1. **Login to Netlify Dashboard**
-2. **Go to Site Settings → Environment Variables**
-3. **Add the following variables:**
-   - `VITE_GEMINI_API_KEY`: Your actual Gemini API key
-   - `VITE_API_BASE_URL`: `https://generativelanguage.googleapis.com/v1/models`
+## Hackathon team
 
-### Getting Gemini API Key
-1. Visit [Google AI Studio](https://makersuite.google.com/app/apikey)
-2. Create new API key
-3. Copy the key (starts with 'AIza...' and 39 characters long)
+| Member | Role in the hackathon project |
+| --- | --- |
+| [Muhammad Alfarizi Habibullah](https://github.com/alfrzhb) | Application development and AI integration |
+| [Ahmad Mushthofa Kamal](https://github.com/muzzto) | Team lead |
+| [Zhafran Pradistyatama Kuncoro](https://github.com/NorpajSucces) | UI/UX design |
 
-### Security Notes
-- ✅ API keys are stored in environment variables
-- ✅ `.env` file is ignored by Git (never committed)
-- ✅ Production keys are managed by Netlify
-- ✅ No sensitive data in source code
+**Result:** 3rd place in a national hackathon (team achievement).
 
-## 🔒 Security & Best Practices
+## Scope, trade-offs, and next steps
 
-### 🛡️ API Key Protection
-Our project implements multiple layers of security to protect sensitive information:
+UsStuck demonstrates a connected product concept and frontend integration, with several explicit prototype trade-offs:
 
-#### Environment Variables
-- **Development**: API keys stored in `.env` file (git-ignored)
-- **Production**: Environment variables managed by hosting platform
-- **Never commit**: API keys never appear in source code or git history
+1. **Source verification:** Hadith retrieval and Gemini responses are *supporting context*, not an authenticated scholarly review process.
+2. **Backend:** Forum topics/comments and login identities are local demo data; a real service, persistent storage, and authentication system would be required for actual users.
+3. **API security:** A direct browser API key is inappropriate for public deployment. Client-side quotas and git hooks are not substitutes for server-enforced controls.
+4. **Model maintenance:** The retired Gemini model must be replaced and the request flow retested.
+5. **Data delivery:** The large static dataset should be assessed for provenance, licensing, deduplication, and more efficient delivery.
+6. **Quality assurance:** Automated tests, accessibility audits, load testing, and factual citation evaluation are not documented as completed.
 
-#### Automated Security Scanning
-```bash
-# GitLeaks configuration for secret detection
-.gitleaks.toml          # Secret detection rules
-.githooks/pre-commit    # Pre-commit security checks
-setup-security.sh       # Security setup script (Linux/macOS)
-setup-security.ps1      # Security setup script (Windows)
-```
-
-#### Security Features
-- 🔍 **Pre-commit hooks** prevent accidental API key commits
-- 🔍 **GitLeaks integration** for automated secret scanning
-- 🔍 **Pattern matching** for common secret formats
-- 🔍 **Manual validation** as fallback security layer
-
-### 🚨 If API Key Gets Exposed
-
-**Immediate Actions:**
-1. **Revoke the exposed key** at [Google AI Studio](https://makersuite.google.com/app/apikey)
-2. **Generate new API key**
-3. **Update environment variables** in development and production
-4. **Remove from git history** if committed:
-   ```bash
-   git filter-branch --force --index-filter 'git rm --cached --ignore-unmatch .env' --prune-empty --tag-name-filter cat -- --all
-   git push origin --force --all
-   ```
-
-### 🔧 Security Setup
-
-Run the security setup script to configure all protection measures:
-
-```bash
-# Linux/macOS
-./setup-security.sh
-
-# Windows PowerShell
-.\setup-security.ps1
-```
-
-This configures:
-- Git hooks for secret prevention
-- GitLeaks for automated scanning
-- Proper .gitignore settings
-- Security validation checks
-
-### 📋 Security Checklist
-
-- ✅ Environment variables configured
-- ✅ .env file git-ignored
-- ✅ Pre-commit hooks active
-- ✅ GitLeaks configured
-- ✅ No hardcoded secrets
-- ✅ Production environment secured
-- ✅ API key validation implemented
-- ✅ Rate limiting configured
-
-## 🌐 Deployment
-
-The application is optimized for deployment on:
-- **Netlify** (recommended)
-- **Vercel**
-- **GitHub Pages**
-- Any static hosting service
-
-### Netlify Deployment
-1. Connect your GitHub repository to Netlify
-2. Set build command: `npm run build`
-3. Set publish directory: `dist`
-4. Deploy automatically on push to main branch
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🤝 Contributing
-
-We welcome contributions from the community! Please read our contributing guidelines before submitting pull requests.
-
-## 📞 Contact & Support
-
-**University Affiliation**: Universitas Islam Negeri Sunan Kalijaga  
-**Address**: Jl. Laksda Adisucipto, Papringan, Caturtunggal, Kec. Depok, Kabupaten Sleman, Daerah Istimewa Yogyakarta 55281  
-**Email**: m.alfarizihabibullah@gmail.com
+The historical README included user counts, AI answer counts, and accuracy percentages that were **not supported by verifiable analytics or evaluation evidence**. Those figures have been intentionally removed.
 
 ---
 
-<div align="center">
-  <p><strong>Built with ❤️ for the Islamic community</strong></p>
-  <p><em>"And whoever seeks knowledge, Allah will make easy for him the path to Paradise"</em> - Prophet Muhammad (PBUH)</p>
-</div>
+Created as a team hackathon project with contributors from **UIN Sunan Kalijaga**.
+
+**License:** No `LICENSE` file is present in the repository; reuse rights should not be inferred from the previous README's MIT badge.
